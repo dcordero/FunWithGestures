@@ -1,4 +1,5 @@
 import UIKit
+import GameController
 
 class ViewController: UIViewController {
 
@@ -20,6 +21,14 @@ class ViewController: UIViewController {
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         for press in presses {
             switch press.type {
+            case .select where dPadState == .up:
+                selectUpWasPressed()
+            case .select where dPadState == .down:
+                selectDownWasPressed()
+            case .select where dPadState == .left:
+                selectLeftWasPressed()
+            case .select where dPadState == .right:
+                selectRightWasPressed()
             case .select:
                 selectWasReceived()
             default:()
@@ -82,6 +91,14 @@ class ViewController: UIViewController {
         view.addGestureRecognizer(rightTapGestureRecognizer)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.setUpDirectionalPad()
+        }
+    }
+    
     @objc
     func swipeUpWasReceived() {
         log(gesture: "🔼 swipeUpWasReceived")
@@ -113,6 +130,27 @@ class ViewController: UIViewController {
     }
     
     @objc
+    func selectUpWasPressed() {
+        log(gesture: "✊👆 selectUpWasPressed")
+    }
+    
+    @objc
+    func selectDownWasPressed() {
+        log(gesture: "✊👇 selectDownWasPressed")
+    }
+    
+    
+    @objc
+    func selectLeftWasPressed() {
+        log(gesture: "✊👈 selectLeftWasPressed")
+    }
+    
+    @objc
+    func selectRightWasPressed() {
+        log(gesture: "✊👉 selectRightWasPressed")
+    }
+    
+    @objc
     func selectWasReceived() {
         log(gesture: "✊ selectWasReceived")
     }
@@ -139,8 +177,45 @@ class ViewController: UIViewController {
     
     // MARK: - Private
     
+    private enum DPadState {
+        case select
+        case right
+        case left
+        case up
+        case down
+    }
+    
+    private var dPadState: DPadState = .select
+
     private func log(gesture: String) {
         gestureLabel.text = gesture
         print(gesture)
+    }
+    
+    private func setUpDirectionalPad() {
+        guard let controller = GCController.controllers().first else { return }
+        guard let micro = controller.microGamepad else { return }
+        
+        let threshold: Float = 0.7
+        micro.reportsAbsoluteDpadValues = true
+        micro.dpad.valueChangedHandler = {
+            [weak self] (pad, x, y) in
+            
+            if y > threshold {
+                self?.dPadState = .up
+            }
+            else if y < -threshold {
+                self?.dPadState = .down
+            }
+            else if x < -threshold {
+                self?.dPadState = .left
+            }
+            else if x > threshold {
+                self?.dPadState = .right
+            }
+            else {
+                self?.dPadState = .select
+            }
+        }
     }
 }
