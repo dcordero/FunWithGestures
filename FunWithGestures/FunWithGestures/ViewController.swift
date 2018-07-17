@@ -93,10 +93,11 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.setUpDirectionalPad()
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(controllerConnected(note:)), name: .GCControllerDidConnect, object: nil)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc
@@ -175,25 +176,8 @@ class ViewController: UIViewController {
         log(gesture: "👉 rightTapWasReceived")
     }
     
-    // MARK: - Private
-    
-    private enum DPadState {
-        case select
-        case right
-        case left
-        case up
-        case down
-    }
-    
-    private var dPadState: DPadState = .select
-
-    private func log(gesture: String) {
-        gestureLabel.text = gesture
-        print(gesture)
-    }
-    
-    private func setUpDirectionalPad() {
-        guard let controller = GCController.controllers().first else { return }
+    @objc private func controllerConnected(note: NSNotification) {
+        guard let controller = note.object as? GCController else { return }
         guard let micro = controller.microGamepad else { return }
         
         let threshold: Float = 0.7
@@ -217,5 +201,22 @@ class ViewController: UIViewController {
                 self?.dPadState = .select
             }
         }
+    }
+    
+    // MARK: - Private
+    
+    private enum DPadState {
+        case select
+        case right
+        case left
+        case up
+        case down
+    }
+    
+    private var dPadState: DPadState = .select
+
+    private func log(gesture: String) {
+        gestureLabel.text = gesture
+        print(gesture)
     }
 }
