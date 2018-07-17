@@ -18,6 +18,8 @@ class ViewController: UIViewController {
     private var leftTapGestureRecognizer: UITapGestureRecognizer!
     private var rightTapGestureRecognizer: UITapGestureRecognizer!
     
+    private var longTouchGestureRecognizer: UILongPressGestureRecognizer!
+    
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         for press in presses {
             switch press.type {
@@ -79,6 +81,10 @@ class ViewController: UIViewController {
         rightTapGestureRecognizer.allowedPressTypes = [.rightArrow]
         rightTapGestureRecognizer.allowedTouchTypes = [.indirect]
         
+        longTouchGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longTouchWasReceived))
+        longTouchGestureRecognizer.allowedPressTypes = []
+        longTouchGestureRecognizer.allowedTouchTypes = [.indirect]
+        
         view.addGestureRecognizer(swipeUpGestureRecognizer)
         view.addGestureRecognizer(swipeDownGestureRecognizer)
         view.addGestureRecognizer(swipeLeftGestureRecognizer)
@@ -89,6 +95,7 @@ class ViewController: UIViewController {
         view.addGestureRecognizer(downTapGestureRecognizer)
         view.addGestureRecognizer(leftTapGestureRecognizer)
         view.addGestureRecognizer(rightTapGestureRecognizer)
+        view.addGestureRecognizer(longTouchGestureRecognizer)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -174,6 +181,23 @@ class ViewController: UIViewController {
     @objc
     func rightTapWasReceived() {
         log(gesture: "👉 rightTapWasReceived")
+    }
+    
+    @objc
+    func longTouchWasReceived() {
+        
+        switch dPadState {
+        case .down:
+            log(gesture: "⏱👇 downLongTouchWasReceived")
+        case .up:
+            log(gesture: "⏱👆 upLongTouchWasReceived")
+        case .left:
+            log(gesture: "⏱👈 leftLongTouchWasReceived")
+        case .right:
+            log(gesture: "⏱👉 rightLongTouchWasReceived")
+        default:
+            log(gesture: "⏱ longTouchWasReceived")
+        }
     }
     
     @objc private func controllerConnected(note: NSNotification) {
