@@ -11,4 +11,4 @@ This repo contains an App, with a single UIViewController which detects and logs
 * Play/Pause key
 * Menu key
  
-Some gestures needs to get the absolute position of the finger in the touch area of Siri Remote, to do so, those gesture recognizers use the GameController framework
+Some gestures need to get the absolute position of the finger in the touch area of Siri Remote, to do so, those gesture recognizers use the GameController framework
