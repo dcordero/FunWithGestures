@@ -20,25 +20,6 @@ class ViewController: UIViewController {
     
     private var longTouchGestureRecognizer: UILongPressGestureRecognizer!
     
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        for press in presses {
-            switch press.type {
-            case .select where dPadState == .up:
-                selectUpWasPressed()
-            case .select where dPadState == .down:
-                selectDownWasPressed()
-            case .select where dPadState == .left:
-                selectLeftWasPressed()
-            case .select where dPadState == .right:
-                selectRightWasPressed()
-            case .select:
-                selectWasReceived()
-            default:()
-            }
-        }
-        super.pressesBegan(presses, with: event)
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -84,7 +65,7 @@ class ViewController: UIViewController {
         longTouchGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longTouchWasReceived))
         longTouchGestureRecognizer.allowedPressTypes = []
         longTouchGestureRecognizer.allowedTouchTypes = [.indirect]
-        
+
         view.addGestureRecognizer(swipeUpGestureRecognizer)
         view.addGestureRecognizer(swipeDownGestureRecognizer)
         view.addGestureRecognizer(swipeLeftGestureRecognizer)
@@ -100,11 +81,30 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        NotificationCenter.default.addObserver(self, selector: #selector(controllerConnected(note:)), name: .GCControllerDidConnect, object: nil)
+        setUpControllers()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        for press in presses {
+            switch press.type {
+            case .select where dPadState == .up:
+                selectUpWasPressed()
+            case .select where dPadState == .down:
+                selectDownWasPressed()
+            case .select where dPadState == .left:
+                selectLeftWasPressed()
+            case .select where dPadState == .right:
+                selectRightWasPressed()
+            case .select:
+                selectWasReceived()
+            default:()
+            }
+        }
+        super.pressesBegan(presses, with: event)
     }
     
     @objc
@@ -200,8 +200,21 @@ class ViewController: UIViewController {
         }
     }
     
-    @objc private func controllerConnected(note: NSNotification) {
-        guard let controller = note.object as? GCController else { return }
+    private func setUpControllers() {
+        for controller in GCController.controllers() {
+            configureFoundControllerController(controller: controller)
+        }
+        NotificationCenter.default.addObserver(self, selector: #selector(controllerConnected(note:)), name: .GCControllerDidConnect, object: nil)
+    }
+    
+    @objc
+    private func controllerConnected(note: NSNotification) {
+        for controller in GCController.controllers() {
+            configureFoundControllerController(controller: controller)
+        }
+    }
+    
+    private func configureFoundControllerController(controller: GCController) {
         guard let micro = controller.microGamepad else { return }
         
         let threshold: Float = 0.7
